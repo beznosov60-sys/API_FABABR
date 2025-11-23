@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_KAD_API_URL,
-  params: { key: import.meta.env.VITE_KAD_API_KEY },
+  baseURL: '/api',
   timeout: 15000
 });
 
@@ -20,7 +19,7 @@ export async function searchCases({ caseNumber, inn }) {
   }
 
   try {
-    const response = await api.post('/kadapi/v1.0/search', payload);
+    const response = await api.post('/search', payload);
     const items = response.data?.Items;
     return Array.isArray(items) ? items : [];
   } catch (error) {
@@ -31,7 +30,7 @@ export async function searchCases({ caseNumber, inn }) {
 
 export async function fetchCaseCard(idOrNumber) {
   try {
-    const response = await api.get('/kadapi/v1.0/card', {
+    const response = await api.get('/card', {
       params: { CaseNumber: idOrNumber }
     });
     return response.data;
@@ -43,7 +42,7 @@ export async function fetchCaseCard(idOrNumber) {
 
 export async function fetchCaseEvents(idOrNumber) {
   try {
-    const response = await api.get('/kadapi/v1.0/card/events', {
+    const response = await api.get('/card/events', {
       params: { CaseNumber: idOrNumber }
     });
     return response.data?.Items || [];
