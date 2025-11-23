@@ -1,8 +1,7 @@
 <template>
   <div class="page">
     <SearchForm v-model="params" @search="onSearch" />
-    <CaseList :items="cases" :loading="loading" />
-    <p v-if="error" class="helper-text" style="color: #dc2626; margin-top: 12px;">{{ error }}</p>
+    <CaseList :items="cases" :loading="loading" :error="error" />
   </div>
 </template>
 
