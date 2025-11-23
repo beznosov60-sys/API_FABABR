@@ -10,12 +10,7 @@ export const useCasesStore = defineStore('cases', {
   state: () => ({
     searchParams: {
       caseNumber: '',
-      inn: '',
-      query: '',
-      startDate: '',
-      endDate: '',
-      type: '',
-      court: ''
+      inn: ''
     },
     cases: [],
     selectedCase: null,
@@ -28,10 +23,18 @@ export const useCasesStore = defineStore('cases', {
       this.searchParams = { ...this.searchParams, ...params };
     },
     async search() {
+      const caseNumber = this.searchParams.caseNumber?.trim();
+      const inn = this.searchParams.inn?.trim();
+
+      if (!caseNumber && !inn) {
+        this.error = 'Введите номер дела или ИНН для поиска.';
+        return;
+      }
+
       this.loading = true;
       this.error = null;
       try {
-        const results = await searchCases(this.searchParams);
+        const results = await searchCases({ caseNumber, inn });
         this.cases = results || [];
       } catch (error) {
         this.error = 'Не удалось выполнить поиск. Проверьте параметры или попробуйте позже.';

@@ -11,38 +11,14 @@
           <label>ИНН стороны</label>
           <input v-model="local.inn" placeholder="7701234567" />
         </div>
-        <div class="input-group">
-          <label>Название организации или ФИО</label>
-          <input v-model="local.query" placeholder="ООО Пример" />
-        </div>
-        <div class="input-group">
-          <label>Дата с</label>
-          <input v-model="local.startDate" type="date" />
-        </div>
-        <div class="input-group">
-          <label>Дата по</label>
-          <input v-model="local.endDate" type="date" />
-        </div>
-        <div class="input-group">
-          <label>Тип дела</label>
-          <select v-model="local.type">
-            <option value="">Любой</option>
-            <option value="bankruptcy">Банкротство</option>
-            <option value="administrative">Административное</option>
-            <option value="civil">Гражданское</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label>Суд</label>
-          <input v-model="local.court" placeholder="АС города Москвы" />
-        </div>
       </div>
       <div class="button-row">
         <button class="btn btn-primary" type="submit">Найти</button>
         <button class="btn btn-ghost" type="button" @click="reset">Сбросить</button>
       </div>
       <p class="helper-text">
-        Можно искать по номеру дела, ИНН, названию стороны, датам и типу дела. Ключ API подставится автоматически.
+        Введите номер дела или ИНН. Остальные фильтры удалены, чтобы отправлять запрос напрямую в КАД без лишних
+        параметров.
       </p>
     </form>
   </div>
@@ -77,12 +53,7 @@ const submit = () => {
 const reset = () => {
   const cleared = {
     caseNumber: '',
-    inn: '',
-    query: '',
-    startDate: '',
-    endDate: '',
-    type: '',
-    court: ''
+    inn: ''
   };
   emit('update:modelValue', cleared);
   Object.assign(local, cleared);

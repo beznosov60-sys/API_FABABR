@@ -64,23 +64,18 @@ const demoEvents = [
 
 export async function searchCases(params) {
   try {
-    const response = await http.post('/kadapi/v1.0/search', {
+    const payload = {
       Page: 1,
       Count: 20,
       CaseNumber: params.caseNumber || undefined,
-      Judge: params.judge || undefined,
-      WithVKSInstances: true,
-      DateFrom: params.startDate || undefined,
-      DateTo: params.endDate || undefined,
-      Courts: params.court ? [params.court] : undefined,
-      Sides: params.query ? [params.query] : undefined,
-      Type: params.type || undefined,
       Inn: params.inn || undefined
-    });
+    };
+
+    const response = await http.post('/kadapi/v1.0/search', payload);
     return response.data?.Items || [];
   } catch (error) {
     console.warn('Поиск завершился с ошибкой, возвращаем демо-данные', error.message);
-    if (params.caseNumber || params.query || params.inn) {
+    if (params.caseNumber || params.inn) {
       return [demoCase];
     }
     return [];
