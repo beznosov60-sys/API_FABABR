@@ -33,11 +33,16 @@ export const useCasesStore = defineStore('cases', {
 
       this.loading = true;
       this.error = null;
+      this.cases = [];
       try {
         const results = await searchCases({ caseNumber, inn });
-        this.cases = results || [];
+        if (!results?.length) {
+          this.error = 'Ничего не найдено';
+          return;
+        }
+        this.cases = results;
       } catch (error) {
-        this.error = 'Не удалось выполнить поиск. Проверьте параметры или попробуйте позже.';
+        this.error = 'Ничего не найдено';
       } finally {
         this.loading = false;
       }
@@ -54,6 +59,8 @@ export const useCasesStore = defineStore('cases', {
         this.events = history || [];
       } catch (error) {
         this.error = 'Не удалось загрузить карточку дела.';
+        this.selectedCase = null;
+        this.events = [];
       } finally {
         this.loading = false;
       }

@@ -1,113 +1,60 @@
 import axios from 'axios';
 
-const apiKey = import.meta.env.VITE_KAD_API_KEY;
-const baseURL = import.meta.env.VITE_KAD_API_URL || 'https://kad.arbitr.ru/';
-
-const http = axios.create({
-  baseURL,
+const api = axios.create({
+  baseURL: import.meta.env.VITE_KAD_API_URL,
+  params: { key: import.meta.env.VITE_KAD_API_KEY },
   timeout: 15000
 });
 
-http.interceptors.request.use((config) => {
-  const params = config.params || {};
-  params.key = apiKey;
-  config.params = params;
-  return config;
-});
+export async function searchCases({ caseNumber, inn }) {
+  const payload = {
+    Page: 1,
+    Count: 20
+  };
 
-const mapParty = (party) => ({
-  name: party?.name || 'Неизвестно',
-  inn: party?.inn || '—',
-  ogrn: party?.ogrn || '—',
-  role: party?.role || 'сторона',
-  address: party?.address || '—'
-});
-
-const demoCase = {
-  id: 'demo-77-2025',
-  caseNumber: 'А40-123456/2025',
-  court: 'АС города Москвы',
-  status: 'В производстве',
-  judge: 'Иванова И.И.',
-  type: 'Арбитражное',
-  parties: [
-    mapParty({ name: 'ООО "Пример"', inn: '7701234567', ogrn: '1127746000000', role: 'Истец', address: 'Москва' }),
-    mapParty({ name: 'АО "Ответчик"', inn: '7722334455', ogrn: '1027700000000', role: 'Ответчик', address: 'Москва' })
-  ],
-  documents: [
-    { id: 'doc-1', title: 'Определение о принятии иска', date: '2025-04-23', url: 'https://kad.arbitr.ru/PdfDocument/demo' }
-  ],
-  schedule: [
-    { date: '2025-05-20', time: '10:00', place: 'Зал 301', type: 'Заседание' }
-  ]
-};
-
-const demoEvents = [
-  {
-    id: 'e1',
-    date: '2025-04-23',
-    type: 'Принят иск',
-    comment: 'Исковое заявление принято судом',
-    amount: '3 200 000 ₽',
-    actor: 'Истец',
-    documents: ['Определение о принятии иска']
-  },
-  {
-    id: 'e2',
-    date: '2025-05-05',
-    type: 'Поступили возражения',
-    comment: 'Ответчик представил отзыв',
-    actor: 'Ответчик',
-    documents: ['Отзыв на иск']
+  if (caseNumber) {
+    payload.CaseNumber = caseNumber;
   }
-];
+  if (inn) {
+    payload.Inn = inn;
+  }
 
-export async function searchCases(params) {
   try {
-    const payload = {
-      Page: 1,
-      Count: 20,
-      CaseNumber: params.caseNumber || undefined,
-      Inn: params.inn || undefined
-    };
-
-    const response = await http.post('/kadapi/v1.0/search', payload);
-    return response.data?.Items || [];
+    const response = await api.post('/kadapi/v1.0/search', payload);
+    const items = response.data?.Items;
+    return Array.isArray(items) ? items : [];
   } catch (error) {
-    console.warn('Поиск завершился с ошибкой, возвращаем демо-данные', error.message);
-    if (params.caseNumber || params.inn) {
-      return [demoCase];
-    }
-    return [];
+    console.error('Не удалось выполнить поиск в КАД', error);
+    throw error;
   }
 }
 
 export async function fetchCaseCard(idOrNumber) {
   try {
-    const response = await http.get('/kadapi/v1.0/card', {
+    const response = await api.get('/kadapi/v1.0/card', {
       params: { CaseNumber: idOrNumber }
     });
-    return response.data || demoCase;
+    return response.data;
   } catch (error) {
-    console.warn('Карточка недоступна, возврат демо', error.message);
-    return demoCase;
+    console.error('Карточка дела недоступна', error);
+    throw error;
   }
 }
 
 export async function fetchCaseEvents(idOrNumber) {
   try {
-    const response = await http.get('/kadapi/v1.0/card/events', {
+    const response = await api.get('/kadapi/v1.0/card/events', {
       params: { CaseNumber: idOrNumber }
     });
-    return response.data?.Items || demoEvents;
+    return response.data?.Items || [];
   } catch (error) {
-    console.warn('События недоступны, возврат демо', error.message);
-    return demoEvents;
+    console.error('История дела недоступна', error);
+    throw error;
   }
 }
 
 export async function downloadCasePdf(url) {
-  const response = await http.get('/pdf', {
+  const response = await api.get('/pdf', {
     params: { url },
     responseType: 'blob'
   });
